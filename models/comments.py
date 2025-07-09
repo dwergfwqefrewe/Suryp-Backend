@@ -41,4 +41,4 @@ class Comment(Base):
                              nullable=False)
     
     user = relationship('User', back_populates='comments')
-    article = relationship('History', back_populates='comments_rel')
+    history = relationship('History', back_populates='comments_rel')

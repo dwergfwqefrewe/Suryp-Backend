@@ -10,6 +10,7 @@ from models.user import User
 from models.history_like import HistoryLike as _HistoryLike
 
 from schemas.like import LikeCreate, LikeOut
+from schemas.response import SuccessResponse
 
 from .dependencies import get_current_user, get_like_or_error
 
@@ -23,10 +24,12 @@ like_manager = LikeManager()
                   summary='Создать лайк',
                   status_code=status.HTTP_201_CREATED)
 def create_like(like: LikeCreate,
-                user: User = Depends(get_current_user)) -> LikeOut:
-    new_like = _HistoryLike(**like.model_dump(), user_id=user.id)  
-    created_like = like_manager.create_obj(new_like)   
-    return LikeOut.model_validate(created_like)
+                user: User = Depends(get_current_user)) -> SuccessResponse:
+    data = like.model_dump()
+    data.pop("user_id")
+    like = _HistoryLike(**data, user_id=user.id)
+    like_manager.create_obj(like)
+    return SuccessResponse(success=True)
 
 
 @like_router.get("/{id}",

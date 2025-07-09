@@ -20,8 +20,11 @@ history_router = APIRouter(prefix='/history', tags=['Истории'])
 @history_router.post('/',
                      summary='Создать историю',
                      status_code=status.HTTP_201_CREATED)
-def create_history(new_history: HistoryCreate, user: User = Depends(get_current_user)) -> SuccessResponse:
-    history = _History(**new_history.model_dump(), author_id=user.id)
+def create_history(new_history: HistoryCreate,
+                   user: User = Depends(get_current_user)) -> SuccessResponse:
+    data = new_history.model_dump()
+    data.pop("author_id", None)
+    history = _History(**data, author_id=user.id)
     history_manager.create_history_with_response(history)
     return SuccessResponse(success=True)
 
@@ -29,7 +32,7 @@ def create_history(new_history: HistoryCreate, user: User = Depends(get_current_
 @history_router.get('/',
                     summary='Получить все истории',
                     status_code=status.HTTP_200_OK)
-def get_histories() -> Sequence[HistoryOut] | []:
+def get_histories() -> Sequence[HistoryOut]:
     return history_manager.get_histories_with_authors()
 
 
@@ -47,7 +50,7 @@ def get_history(id: int, user: User = Depends(get_current_user)) -> HistoryOut:
 def update_history(id: int,
                    updated_history: HistoryUpdate,
                    user: User = Depends(get_current_user)) -> SuccessResponse:
-    history = get_history_or_error(id=id, user=user)
+    get_history_or_error(id=id, user=user)
     history_manager.update_obj(id=id, updated_obj=updated_history)
     return SuccessResponse(success=True)
 

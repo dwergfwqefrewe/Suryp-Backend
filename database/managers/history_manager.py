@@ -23,9 +23,9 @@ class HistoryManager(BaseManager[History, HistoryUpdate]):
         with self.manager.get_session() as session:
             query = session.query(self._model).options(joinedload(self._model.author))
             history = query.get(id)
-            if history:
-                return HistoryOut.model_validate(history)
-            return None
+            if not history:
+                return None
+            return history
 
     def create_history_with_response(self, history_obj):
         """Создать историю и вернуть сериализованный HistoryOut с автором"""

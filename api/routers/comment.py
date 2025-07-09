@@ -6,6 +6,7 @@ from models.user import User
 from models.comments import Comment as _Comment
 
 from schemas.comment import CommentCreate, CommentOut, CommentUpdate
+from schemas.response import SuccessResponse
 
 from .dependencies import get_current_user, get_comment_or_error
 
@@ -19,10 +20,12 @@ comment_manager = CommentManager()
                      summary='Создать комментарий',
                      status_code=status.HTTP_201_CREATED)
 def create_comment(comment: CommentCreate,
-                   user: User = Depends(get_current_user)) -> CommentOut:
-    new_comment = _Comment(**comment.model_dump(), user_id=user.id)
-    comment_manager.create_obj(new_comment)
-    return CommentOut.model_validate(new_comment)
+                   user: User = Depends(get_current_user)) -> SuccessResponse:
+    data = comment.model_dump()
+    data.pop("user_id", None)
+    comment = _Comment(**data, user_id=user.id)
+    comment_manager.create_obj(comment)
+    return SuccessResponse(success=True)
 
 
 @comment_router.get("/{id}",

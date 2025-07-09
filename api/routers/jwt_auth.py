@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta
 
-from jose import jwt, JWTError
+from jose import jwt
 from fastapi import HTTPException
 
-from config import settings
+from main_config import settings
 
 
 def create_access_token(data: dict) -> str:

@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-from config import settings
+from main_config import settings
 
 # Создаем движок базы данных
 engine = create_engine(
@@ -10,10 +10,8 @@ engine = create_engine(
     pool_pre_ping=True,   # Проверка соединения перед использованием
 )
 
-# Создаем базовый класс для моделей
 Base = declarative_base()
 
-# Создаем фабрику сессий
 SessionLocal = sessionmaker(
     bind=engine,
     expire_on_commit=False,

@@ -5,13 +5,12 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from api.router import main_router
 
-from config import settings
+from main_config import settings
 from database.config import engine, Base
-from models import user, history, comments, history_like
 
 # Создаем таблицы при запуске
 @asynccontextmanager
-async def lifespan(app: FastAPI):   
+async def lifespan(app: FastAPI):
     # Создаем таблицы при запуске
     Base.metadata.create_all(bind=engine)
     yield

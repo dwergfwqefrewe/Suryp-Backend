@@ -76,7 +76,7 @@ backend/
    ```bash
    git clone https://github.com/dwergfwqefrewe/Suryp-Backend.git
    cd backend
-   ```
+   ```  
 2. **Создайте и активируйте виртуальное окружение:**
    ```bash
    python -m venv venv

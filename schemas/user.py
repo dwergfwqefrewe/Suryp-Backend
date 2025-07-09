@@ -21,16 +21,16 @@ class UserCreate(UserBase):
         - login (str) - логин пользователя
         - about (str | None) - описание пользователя
         - avatar_url (str | None) - url аватара пользователя
-        - password_hash (str) - хэш пароля пользователя
+        - password (str) - пароль пользователя
     """
-    password_hash: str
+    password: str
 
 
 class UserOut(UserBase):
     """Схема для получения пользователя:
         - id (int) - id пользователя
         - role (int) - роль пользователя
-        - histories (List[HistoryOut]) - список статей пользователя
+        - histories (List[HistoryOut]) - список историй пользователя
     """
     id: int
     role: int
@@ -39,7 +39,7 @@ class UserOut(UserBase):
     @computed_field
     @property
     def histories_count(self) -> int:
-        """Метод для получения количества статей пользователя"""
+        """Метод для получения количества историй пользователя"""
         return len(self.histories)
     
     class Config:
@@ -49,21 +49,21 @@ class UserOut(UserBase):
 class UserAuth(BaseModel):
     """Схема для входа в систему:
         - login (str) - логин пользователя
-        - password_hash (str) - хэш пароля пользователя
+        - password (str) - пароль пользователя
     """
     login: str
-    password_hash: str
+    password: str
 
 
 class UpdateUser(BaseModel):
     """Схема для обновления пользователя:
         - login (str | None) - логин пользователя
-        - password_hash (str | None) - хэш пароля пользователя
+        - password (str | None) - пароль пользователя
         - about (str | None) - описание пользователя
         - avatar_url (str | None) - url аватара пользователя
     """
     login: str | None = None
-    password_hash: str | None = None
+    password: str | None = None
     about: str | None = None
     avatar_url: str | None = None
 

@@ -39,8 +39,7 @@ def set_cookies(response: Response, access_token: str, refresh_token: str) -> No
 def create_user(new_user: UserCreate, response: Response) -> SuccessResponse:
     """Создает нового пользователя и выдает токены"""
     try:
-        user = _User(**new_user.model_dump())
-        created_user = manager.create_obj(obj=user)
+        created_user = manager.create_obj(new_user)
         access_token = create_access_token({"sub": str(created_user.id)})
         refresh_token = create_refresh_token({"sub": str(created_user.id)})
         set_cookies(response, access_token, refresh_token)
@@ -54,7 +53,8 @@ def create_user(new_user: UserCreate, response: Response) -> SuccessResponse:
 
 
 @auth_router.post('/login',
-                  summary='Войти в аккаунт')
+                  summary='Войти в аккаунт',
+                  status_code=status.HTTP_200_OK)
 def login(user: UserAuth, response: Response) -> SuccessResponse:
     user_id = manager.get_user_id_by_login(login=user.login)
 
@@ -68,7 +68,8 @@ def login(user: UserAuth, response: Response) -> SuccessResponse:
 
 
 @auth_router.post('/refresh',
-                  summary='Обновить access токен')
+                  summary='Обновить access токен',
+                  status_code=status.HTTP_200_OK)
 def refresh_token(request: Request, response: Response) -> SuccessResponse:
     refresh_token = request.cookies.get(JWT_REFRESH_COOKIE_NAME)
     if not refresh_token:
@@ -84,7 +85,8 @@ def refresh_token(request: Request, response: Response) -> SuccessResponse:
 
 
 @auth_router.post('/logout',
-                  summary='Выйти из аккаунта')
+                  summary='Выйти из аккаунта',
+                  status_code=status.HTTP_200_OK)
 def logout(response: Response) -> SuccessResponse:
     response.delete_cookie(JWT_ACCESS_COOKIE_NAME)
     response.delete_cookie(JWT_REFRESH_COOKIE_NAME)

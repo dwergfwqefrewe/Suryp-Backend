@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     
     # Основные настройки
     app_name: str = "Syrup Chat API"
-    debug: bool = True
+    debug: bool = False
     
     # База данных
     database_url: str = "sqlite:///./database/database.db"

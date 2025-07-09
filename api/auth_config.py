@@ -1,4 +1,4 @@
-from config import settings
+from main_config import settings
 
 # Импортируем настройки из централизованной конфигурации
 JWT_SECRET_KEY = settings.jwt_secret_key

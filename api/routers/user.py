@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, Response
 from sqlalchemy.orm import joinedload
 
 from database.managers.user_manager import UserManager
@@ -9,7 +9,7 @@ from schemas.user import UserOut, UpdateUser, UpdateMe
 from schemas.response import SuccessResponse
 
 from .dependencies import get_current_user
-
+from ..auth_config import JWT_ACCESS_COOKIE_NAME, JWT_REFRESH_COOKIE_NAME
 
 user_manager = UserManager()
 
@@ -39,6 +39,8 @@ def patch_me(updated_user: UpdateMe, user: User = Depends(get_current_user)) -> 
 @user_router.delete('/me',
                     summary='Удалить свой аккаунт',
                     status_code=status.HTTP_200_OK)
-def delete_user(user: User = Depends(get_current_user)) -> SuccessResponse:
+def delete_user(response: Response, user: User = Depends(get_current_user)) -> SuccessResponse:
     user_manager.delete_obj(id=user.id)
+    response.delete_cookie(JWT_ACCESS_COOKIE_NAME)
+    response.delete_cookie(JWT_REFRESH_COOKIE_NAME)
     return SuccessResponse(success=True)
