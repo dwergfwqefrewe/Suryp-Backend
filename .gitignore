@@ -1,0 +1,35 @@
+ # dependencies
+node_modules/
+
+# dotenv environment variables
+.env
+.env.*
+
+# production build
+build/
+dist/
+
+# misc
+.DS_Store
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# testing
+coverage/
+
+# editor directories and files
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# system files
+Thumbs.db
+
+# local history
+.history/
+
+# OS generated files
+*.swp
