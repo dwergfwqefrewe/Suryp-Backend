@@ -1,22 +1,18 @@
-from typing import Sequence
-
 from fastapi import (
     APIRouter,
-    HTTPException,
     Depends,
     status
 )
 
-from models.user import User
-from schemas.like import (
-    LikeCreate, 
-    LikeOut,
-    LikeUpdate
-)
-from schemas.response import SuccessResponse
-from models.history_like import HistoryLike as _HistoryLike
 from database.managers.like_manager import LikeManager
+
+from models.user import User
+from models.history_like import HistoryLike as _HistoryLike
+
+from schemas.like import LikeCreate, LikeOut
+
 from .dependencies import get_current_user, get_like_or_error
+
 
 like_router = APIRouter(prefix="/likes", tags=["Лайки"])
 

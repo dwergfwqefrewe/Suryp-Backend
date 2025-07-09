@@ -1,13 +1,17 @@
+from typing import List
+
 from fastapi import (
     APIRouter,
     Depends,
     status
 )
-from typing import List
-from models.user import User
-from schemas.user import UserBase
+
 from database.managers.message_manager import MessageManager
 from database.managers.user_manager import UserManager
+
+from models.user import User
+from schemas.user import UserBase
+
 from .dependencies import get_current_user
 
 message_router = APIRouter(prefix="/messages", tags=["Сообщения"])

@@ -2,16 +2,19 @@ from fastapi import HTTPException, Request
 from jose import JWTError
 from sqlalchemy.orm import selectinload
 
-from .jwt_auth import decode_token
 from api.auth_config import JWT_ACCESS_COOKIE_NAME
-from database.managers.user_manager import UserManager
+
 from models.user import User
 from models.history import History as _History
 from models.comments import Comment as _Comment
 from models.history_like import HistoryLike as _Like
+
 from database.managers.history_manager import HistoryManager
 from database.managers.comment_manager import CommentManager
 from database.managers.like_manager import LikeManager
+from database.managers.user_manager import UserManager
+
+from .jwt_auth import decode_token
 
 
 user_manager = UserManager()
@@ -26,21 +29,21 @@ def get_current_user(request: Request) -> User:
     """
     token = request.cookies.get(JWT_ACCESS_COOKIE_NAME)
     if not token:
-        raise HTTPException(status_code=401, detail="Missing access token")
+        raise HTTPException(status_code=401, detail="Отсутствует access токен")
     try:
         payload = decode_token(token)
         sub = payload.get("sub")
         if sub is None:
-            raise HTTPException(status_code=401, detail="Invalid Token")
+            raise HTTPException(status_code=401, detail="Неверный токен")
         user_id = int(sub)
     except (JWTError, ValueError):
-        raise HTTPException(status_code=401, detail="Invalid Token")
+        raise HTTPException(status_code=401, detail="Неверный токен")
     user = user_manager.get_obj_by_id(
         id=user_id,
         options=[selectinload(User.histories).selectinload(_History.author)]
     )
     if user is None:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=404, detail="Пользователь не найден")
     return user
 
 

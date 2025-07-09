@@ -2,10 +2,10 @@ from sqlalchemy.orm import joinedload
 
 from database.managers.base_manager import BaseManager
 from models.history import History
-from schemas.history import UpdateHistory, HistoryOut
+from schemas.history import HistoryUpdate, HistoryOut
 
 
-class HistoryManager(BaseManager[History, UpdateHistory]):
+class HistoryManager(BaseManager[History, HistoryUpdate]):
     """Менеджер для работы с историями"""
 
     def __init__(self):

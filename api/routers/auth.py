@@ -1,11 +1,14 @@
-from fastapi import APIRouter, HTTPException, Response, Request, status
+from fastapi import APIRouter, Request, Response, HTTPException, status
 
 from api.auth_config import JWT_ACCESS_COOKIE_NAME, JWT_REFRESH_COOKIE_NAME
+from .jwt_auth import create_access_token, create_refresh_token, decode_token
+
 from database.managers.user_manager import UserManager
-from schemas.user import UserCreate, UserAuth
-from schemas.response import SuccessResponse
+
 from models.user import User as _User
-from .jwt_auth import create_access_token, create_refresh_token, decode_token, create_token
+from schemas.response import SuccessResponse
+from schemas.user import UserCreate, UserAuth
+
 
 manager = UserManager()
 

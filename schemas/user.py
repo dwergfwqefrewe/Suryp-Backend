@@ -2,7 +2,7 @@ from typing import List
 
 from pydantic import BaseModel, computed_field
 
-from schemas.article import ArticleOut
+from schemas.history import HistoryOut
 
 
 class UserBase(BaseModel):
@@ -30,17 +30,17 @@ class UserOut(UserBase):
     """Схема для получения пользователя:
         - id (int) - id пользователя
         - role (int) - роль пользователя
-        - articles (List[ArticleOut]) - список статей пользователя
+        - histories (List[HistoryOut]) - список статей пользователя
     """
     id: int
     role: int
-    articles: List[ArticleOut]
+    histories: List[HistoryOut]
 
     @computed_field
     @property
-    def articles_count(self) -> int:
+    def histories_count(self) -> int:
         """Метод для получения количества статей пользователя"""
-        return len(self.articles)
+        return len(self.histories)
     
     class Config:
         from_attributes = True

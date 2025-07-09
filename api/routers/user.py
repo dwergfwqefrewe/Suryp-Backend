@@ -1,13 +1,13 @@
-from collections.abc import Sequence
-
-from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import joinedload
+
+from database.managers.user_manager import UserManager
 
 from models.user import User
 from models.history import History
 from schemas.user import UserOut, UpdateUser, UpdateMe
 from schemas.response import SuccessResponse
-from database.managers.user_manager import UserManager
+
 from .dependencies import get_current_user
 
 

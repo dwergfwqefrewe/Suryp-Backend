@@ -4,14 +4,14 @@ from datetime import datetime
 from schemas.author import AuthorOut
 
 
-class ArticleCreate(BaseModel):
+class HistoryCreate(BaseModel):
     """Схема для создания статьи"""
     title: str
     description: str | None
     author_id: int
 
 
-class ArticleOut(BaseModel):
+class HistoryOut(BaseModel):
     """Схема для получения статьи"""
     id: int
     title: str
@@ -25,7 +25,7 @@ class ArticleOut(BaseModel):
         from_attributes = True
 
 
-class UpdateArticle(BaseModel):
+class HistoryUpdate(BaseModel):
     """Схема для обновления статьи"""
     title: str | None
     description: str | None

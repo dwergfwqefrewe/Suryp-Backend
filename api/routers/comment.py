@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Depends, status
 
+from database.managers.comment_manager import CommentManager
+
 from models.user import User
 from models.comments import Comment as _Comment
+
 from schemas.comment import CommentCreate, CommentOut, CommentUpdate
 
-from database.managers.comment_manager import CommentManager
 from .dependencies import get_current_user, get_comment_or_error
 
 

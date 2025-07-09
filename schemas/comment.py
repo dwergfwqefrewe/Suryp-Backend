@@ -5,7 +5,7 @@ from datetime import datetime
 class CommentBase(BaseModel):   
     """Схема для создания комментария"""
     content: str
-    article_id: int
+    history_id: int
     user_id: int
 
 
@@ -23,7 +23,7 @@ class CommentOut(BaseModel):
     """Схема для получения комментария"""
     id: int
     user_id: int
-    article_id: int
+    history_id: int
     content: str
     created_at: datetime
     updated_at: datetime | None
