@@ -1,35 +1,79 @@
- # dependencies
-node_modules/
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
 
-# dotenv environment variables
-.env
-.env.*
+# C extensions
+*.so
 
-# production build
+# Distribution / packaging
+.Python
 build/
+develop-eggs/
 dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
 
-# misc
-.DS_Store
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# Virtual environments
+venv/
+ENV/
+env/
+.venv/
+env.bak/
+venv.bak/
 
-# testing
-coverage/
+# PyInstaller
+*.manifest
+*.spec
 
-# editor directories and files
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Database
+*.db
+*.sqlite3
+
+# VS Code
 .vscode/
-.idea/
-*.sublime-workspace
-*.sublime-project
 
-# system files
+# OS files
+.DS_Store
 Thumbs.db
 
-# local history
-.history/
-
-# OS generated files
-*.swp
+# Other
+*.log
+    
