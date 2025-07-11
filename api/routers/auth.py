@@ -5,7 +5,6 @@ from .jwt_auth import create_access_token, create_refresh_token, decode_token
 
 from database.managers.user_manager import UserManager
 
-from models.user import User as _User
 from schemas.response import SuccessResponse
 from schemas.user import UserCreate, UserAuth
 

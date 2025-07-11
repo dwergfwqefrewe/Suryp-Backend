@@ -1,8 +1,4 @@
-from typing import List
-
-from pydantic import BaseModel, computed_field
-
-from schemas.history import HistoryOut
+from pydantic import BaseModel
 
 
 class UserBase(BaseModel):
@@ -12,8 +8,8 @@ class UserBase(BaseModel):
         - avatar_url (str | None) - url аватара пользователя
     """
     login: str
-    about: str | None
-    avatar_url: str | None
+    about: str | None = None
+    avatar_url: str | None = None
 
 
 class UserCreate(UserBase):
@@ -34,16 +30,6 @@ class UserOut(UserBase):
     """
     id: int
     role: int
-    histories: List[HistoryOut]
-
-    @computed_field
-    @property
-    def histories_count(self) -> int:
-        """Метод для получения количества историй пользователя"""
-        return len(self.histories)
-    
-    class Config:
-        from_attributes = True
 
 
 class UserAuth(BaseModel):

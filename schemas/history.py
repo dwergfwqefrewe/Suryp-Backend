@@ -25,6 +25,18 @@ class HistoryOut(BaseModel):
         from_attributes = True
 
 
+class HistoryOutShort(BaseModel):
+    id: int
+    title: str
+    description: str | None
+    likes: int
+    created_at: datetime
+    updated_at: datetime | None
+
+    class Config:
+        from_attributes = True
+
+
 class HistoryUpdate(BaseModel):
     """Схема для обновления статьи"""
     title: str | None

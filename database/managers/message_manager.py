@@ -1,9 +1,11 @@
 from typing import List
 from sqlalchemy import or_, and_
+from database.managers.user_manager import UserManager
 from models.message import Message
 from database.managers.base_manager import BaseManager
 from database.managers.session_manager import manager
 
+user_manager = UserManager()
 
 class MessageManager(BaseManager[Message, None]):
     def __init__(self):
@@ -39,3 +41,15 @@ class MessageManager(BaseManager[Message, None]):
                     Message.receiver_id == user_id
                 )
             ).order_by(Message.timestamp.desc()).all()
+
+    def get_last_message(self, first_login: str, second_login: str) -> Message:
+        first_id = user_manager.get_user_id_by_login(first_login)
+        second_id = user_manager.get_user_id_by_login(second_login)
+        with manager.get_session() as session:
+            return session.query(Message).filter(
+                or_(
+                    and_(Message.sender_id == first_id, Message.receiver_id == second_id),
+                    and_(Message.sender_id == second_id, Message.receiver_id == first_id)
+                )
+            ).order_by(Message.timestamp.desc()).first()
+
