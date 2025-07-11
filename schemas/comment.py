@@ -6,7 +6,6 @@ class CommentBase(BaseModel):
     """Схема для создания комментария"""
     content: str
     history_id: int
-    user_id: int
 
 
 class CommentCreate(CommentBase):
@@ -16,17 +15,17 @@ class CommentCreate(CommentBase):
 
 class CommentUpdate(BaseModel):
     """Схема для обновления комментария"""
-    content: str | None
+    content: str 
 
 
 class CommentOut(BaseModel):
     """Схема для получения комментария"""
     id: int
-    user_id: int
+    user_id: int 
     history_id: int
     content: str
     created_at: datetime
-    updated_at: datetime | None
+    updated_at: datetime | None = None
 
     class Config:
         from_attributes = True

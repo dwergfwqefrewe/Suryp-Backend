@@ -75,14 +75,15 @@ async def message(sid: str, data: Dict[str, Any]) -> None:
         logger.warning(f"[message] Неверные данные от {sender_id}")
         return
 
-    message = message_manager.save_message(sender_id, receiver_id, text)
+    message = await message_manager.save_message(sender_id, receiver_id, text)
 
     msg_payload = {
         "id": message.id,
         "sender_id": sender_id,
         "receiver_id": receiver_id,
         "text": message.text,
-        "timestamp": message.timestamp.isoformat()
+        "timestamp": message.timestamp.isoformat(),
+        "from_me": True
     }
 
     # Отправляем обоим участникам

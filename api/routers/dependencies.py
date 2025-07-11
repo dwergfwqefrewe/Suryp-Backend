@@ -1,8 +1,7 @@
 from fastapi import HTTPException, Request
 from jose import JWTError
-from sqlalchemy.orm import selectinload
 
-from api.auth_config import JWT_ACCESS_COOKIE_NAME
+from api.auth_config import JWT_ACCESS_COOKIE_NAME, JWT_REFRESH_COOKIE_NAME
 
 from models.user import User
 from models.history import History as _History
@@ -23,7 +22,7 @@ comment_manager = CommentManager()
 like_manager = LikeManager()
 
 
-def get_current_user(request: Request) -> User:
+async def get_current_user(request: Request) -> User:
     """
     Получает пользователя из БД по access token из cookies
     """
@@ -38,46 +37,72 @@ def get_current_user(request: Request) -> User:
         user_id = int(sub)
     except (JWTError, ValueError):
         raise HTTPException(status_code=401, detail="Неверный токен")
-    user = user_manager.get_obj_by_id(
-        id=user_id,
-        options=[selectinload(User.histories).selectinload(_History.author)]
-    )
+    user = await user_manager.get_obj_by_id(id=user_id)
     if user is None:
         raise HTTPException(status_code=404, detail="Пользователь не найден")
     return user
 
 
-def get_comment_or_error(id: int, user: User) -> _Comment:
+async def validate_refresh_token(request: Request) -> int:
+    """
+    Проверяет refresh токен и возвращает ID пользователя
+    """
+    token = request.cookies.get(JWT_REFRESH_COOKIE_NAME)
+    if not token:
+        raise HTTPException(401, detail="Отсутствует refresh токен")
+
+    try:
+        user_id = int(decode_token(token).get("sub") or 0)
+    except (JWTError, ValueError):
+        raise HTTPException(401, detail="Неверный токен")
+
+    user = await user_manager.get_obj_by_id(user_id)
+    if not user:
+        raise HTTPException(401, detail="Пользователь не найден")
+
+    return user_id  
+
+
+async def get_comment_or_error(id: int, user: User) -> _Comment:
     """
     Получает комментарий из БД по ID и проверяет, что он принадлежит текущему пользователю
     """
-    comment = comment_manager.get_obj_by_id(id=id)
+    comment = await comment_manager.get_obj_by_id(id=id)
     if not comment:
         raise HTTPException(status_code=404, detail="Комментарий не найден")
-    if comment.user_id != user.id:
+    user_id = getattr(comment, 'user_id', None)
+    if user_id is None:
+        raise HTTPException(status_code=404, detail="Пользователь не найден")
+    if user_id != user.id:
         raise HTTPException(status_code=403, detail="Нет доступа к комментарию")
     return comment
 
 
-def get_history_or_error(id: int, user: User) -> _History:
+async def get_history_or_error(id: int, user: User) -> _History:
     """
     Получает историю из БД по ID и проверяет, что она принадлежит текущему пользователю
     """
-    history = history_manager.get_history_by_id_with_author(id=id)
+    history = await history_manager.get_obj_by_id(id=id)
     if not history:
         raise HTTPException(status_code=404, detail="История не найдена")
-    if history.author_id != user.id:
+    author_id = getattr(history, 'author_id', None) 
+    if author_id is None:
+        raise HTTPException(status_code=404, detail="Пользователь не найден")
+    if author_id != user.id:
         raise HTTPException(status_code=403, detail="Нет доступа к истории")
     return history
 
 
-def get_like_or_error(id: int, user: User) -> _Like:
+async def get_like_or_error(id: int, user: User) -> _Like:
     """
     Получает лайк из БД по ID и проверяет, что он принадлежит текущему пользователю
     """
-    like = like_manager.get_obj_by_id(id=id)
+    like = await like_manager.get_obj_by_id(id=id)
     if not like:
         raise HTTPException(status_code=404, detail="Лайк не найден")
-    if like.user_id != user.id:
+    user_id = getattr(like, 'user_id', None)
+    if user_id is None:
+        raise HTTPException(status_code=404, detail="Пользователь не найден")
+    if user_id != user.id:
         raise HTTPException(status_code=403, detail="Нет доступа к лайку")
     return like

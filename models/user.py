@@ -23,7 +23,7 @@ class User(Base):
     __tablename__ = 'users'
 
     id = Column(Integer, primary_key=True)
-    login = Column(String, nullable=False, unique=True)
+    login = Column(String(100), nullable=False, unique=True)
     password_hash = Column(String, nullable=False)
     role = Column(Integer, default=1, nullable=False)
     avatar_url = Column(String, nullable=True)

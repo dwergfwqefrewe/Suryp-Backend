@@ -1,15 +1,17 @@
-from typing import Any, Generator, Self
-from contextlib import contextmanager
+from typing import Any, Generator, Self, AsyncGenerator
+from contextlib import contextmanager, asynccontextmanager
 
 from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from database.config import engine, Base, SessionLocal
+from database.config import engine, Base, AsyncSessionLocal
 
 
 class Manager:
-    """Менеджер для работы с сессиями базы данных
+    """
+    Менеджер для работы с сессиями базы данных
         - _instance - экземпляр менеджера
-        - SessionLocal - сессия базы данных
+        - AsyncSessionLocal - асинхронная сессия базы данных
         - engine - движок базы данных
     """
 
@@ -21,25 +23,27 @@ class Manager:
             cls._instance = super().__new__(cls)
         return cls._instance
 
-
     def __init__(self) -> None:
         """Инициализация менеджера"""
-        self.SessionLocal = SessionLocal
+        self.AsyncSessionLocal = AsyncSessionLocal
         self.engine = engine
-
-        Base.metadata.create_all(self.engine)
 
     @contextmanager
     def get_session(self) -> Generator[Session, Any, None]:
-        """Контекстный менеджер для работы с session SQLAlchemy"""
-        session = self.SessionLocal()
-        try:
-            yield session
-        except Exception:
-            session.rollback()
-            raise
-        finally:
-            session.close()
+        """Контекстный менеджер для работы с session SQLAlchemy (заглушка)"""
+        raise NotImplementedError('Синхронная сессия не реализована, используйте get_async_session')
+
+    @asynccontextmanager
+    async def get_async_session(self) -> AsyncGenerator[AsyncSession, Any]:
+        """Асинхронный контекстный менеджер для работы с AsyncSession SQLAlchemy"""
+        async with self.AsyncSessionLocal() as session:
+            try:
+                yield session
+            except Exception:
+                await session.rollback()
+                raise
+            finally:
+                await session.close()
 
 
 manager: Manager = Manager()

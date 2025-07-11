@@ -5,10 +5,8 @@ from datetime import datetime
 class LikeBase(BaseModel):
     """Схема для создания лайка:
         - history_id - id статьи, которой поставили лайк
-        - user_id - id пользователя, который поставил лайк
     """
-    history_id: int
-    user_id: int
+    history_id: int 
 
 
 class LikeCreate(LikeBase):
@@ -29,7 +27,7 @@ class LikeOut(BaseModel):
     id: int
     user_id: int
     history_id: int
-    created_at: datetime
+    created_at: datetime 
 
     class Config:
         from_attributes = True

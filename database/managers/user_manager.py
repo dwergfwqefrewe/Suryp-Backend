@@ -1,58 +1,72 @@
 import bcrypt
+from typing import Optional
 
 from .base_manager import BaseManager
 from .session_manager import manager
 from models.user import User
 from schemas.user import UpdateUser, UserAuth, UserCreate
-
+from exceptions import DatabaseError
+from sqlalchemy.future import select
 
 class UserManager(BaseManager[User, UpdateUser]):
-    """Менеджер для работы с пользователями"""
-
+    """
+    Менеджер для работы с пользователями (асинхронный)
+    """
     def __init__(self) -> None:
         super().__init__(User)
 
-    @staticmethod
-    def get_user_id_by_login(login: str) -> int | None:
-        """Получение id пользователя по логину
-            - login - логин пользователя
+    async def get_user_by_login(self, login: str) -> Optional[User]:
+        async with manager.get_async_session() as session:
+            result = await session.execute(select(User).where(User.login == login))
+            return result.scalars().first()
+
+    async def get_user_id_by_login(self, login: str) -> Optional[int]:
+        user = await self.get_user_by_login(login)
+        return getattr(user, "id", None) if user else None
+
+    async def create_user(self, user_create: UserCreate) -> User:
         """
-        with manager.get_session() as session:
-            user = session.query(User).filter(User.login == login).first()
-            return user.id if user else None
+        Создание пользователя с хешированием пароля (асинхронно)
+        """
+        try:
+            password = user_create.password
+            obj_dict = user_create.model_dump(exclude={"password"})
+            user = User(**obj_dict)
+            setattr(user, "password_hash", self._hash_password(password))
+            async with manager.get_async_session() as session:
+                session.add(user)
+                await session.commit()
+                await session.refresh(user)
+                return user
+        except Exception as e:
+            raise DatabaseError(f"Ошибка при создании пользователя: {str(e)}")
 
-    def create_obj(self, obj: User | UserCreate) -> User:
-        """Создание пользователя с хешированием пароля"""
-        if isinstance(obj, UserCreate):
-            password = obj.password
-            obj_dict = obj.model_dump(exclude={"password"})
-            obj = User(**obj_dict)
-            obj.password_hash = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
-
-        elif isinstance(obj, User):
-            # Если передали User с password_hash, ничего не делаем
-            if not obj.password_hash:
+    async def create_obj(self, obj: User) -> User:
+        """
+        Создание пользователя, если уже User (асинхронно)
+        """
+        try:
+            if getattr(obj, "password_hash", None) in (None, ""):
                 raise ValueError("User model must have 'password_hash' set")
+            async with manager.get_async_session() as session:
+                session.add(obj)
+                await session.commit()
+                await session.refresh(obj)
+                return obj
+        except Exception as e:
+            raise DatabaseError(f"Ошибка при создании пользователя: {str(e)}")
 
-        else:
-            raise ValueError("Invalid object type passed to create_obj")
-
-        with manager.get_session() as session:
-            session.add(obj)
-            session.commit()
-            session.refresh(obj)
-            return obj
-
-    @staticmethod
-    def check_user_data(user: UserAuth) -> User | None:
-        """Проверка данных пользователя
-            - user - данные пользователя
+    async def check_user_data(self, user: UserAuth) -> Optional[User]:
         """
-        with manager.get_session() as session:
-            db_user = session.query(User).filter(User.login == user.login).first()
-            if not db_user:
-                return None
-            if bcrypt.checkpw(user.password.encode("utf-8"),
-                              db_user.password_hash.encode("utf-8")):
-                return db_user
+        Проверка данных пользователя (асинхронно)
+        """
+        db_user = await self.get_user_by_login(user.login)
+        if not db_user:
             return None
+        db_password_hash = getattr(db_user, "password_hash", None)
+        if db_password_hash and bcrypt.checkpw(user.password.encode("utf-8"), db_password_hash.encode("utf-8")):
+            return db_user
+        return None
+
+    def _hash_password(self, password: str) -> str:
+        return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")

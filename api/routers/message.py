@@ -3,7 +3,8 @@ from typing import List
 from fastapi import (
     APIRouter,
     Depends,
-    status
+    status,
+    HTTPException
 )
 
 from database.managers.message_manager import MessageManager
@@ -24,19 +25,22 @@ user_manager = UserManager()
 @message_router.get("/chats",
                     summary="Получить все чаты",
                     status_code=status.HTTP_200_OK)
-def get_chats(user: User = Depends(get_current_user)) -> List[ChatOut]:
-    chats = message_manager.get_chats(user.id)
+async def get_chats(user: User = Depends(get_current_user)) -> List[ChatOut]:
+    user_id = getattr(user, 'id', None)
+    if user_id is None:
+        raise HTTPException(status_code=400, detail='Некорректный пользователь')
+    chats = await message_manager.get_chats(user_id)
 
     companion_ids = {
-        chat.receiver_id if chat.sender_id == user.id else chat.sender_id
+        chat.receiver_id if chat.sender_id == user_id else chat.sender_id   
         for chat in chats
     }
 
-    companions = [user_manager.get_obj_by_id(uid) for uid in companion_ids]
+    companions = [await user_manager.get_obj_by_id(uid) for uid in companion_ids]
 
     chats = []
     for comp in companions:
-        last_msg = message_manager.get_last_message(user.login, comp.login)
+        last_msg = await message_manager.get_last_message(user_id, comp.login)
         chats.append(ChatOut(
             companion_login=comp.login,
             companion_avatar_url=comp.avatar_url,
