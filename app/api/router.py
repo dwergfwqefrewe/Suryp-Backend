@@ -7,7 +7,6 @@ from api.routers.comment import comment_router
 from api.routers.like import like_router
 from api.routers.message import message_router
 
-
 main_router = APIRouter()
 
 main_router.include_router(user_router)

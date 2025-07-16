@@ -5,7 +5,8 @@ from fastapi import (
     Depends,
     status,
     Response,
-    Query
+    Query,
+    Body
 )
 
 from exceptions.base import DatabaseError
@@ -83,6 +84,19 @@ async def get_histories(user: User = Depends(get_current_user),
         app_logger.error(f"Ошибка при получении своих историй: {e}")
         raise DatabaseError("Ошибка при получении своих историй")
 
+@user_router.get('/{login}/avatar', summary='Получить аватар пользователя по логину', status_code=status.HTTP_200_OK)
+async def get_avatar_by_login(login: str):
+    try:
+        user = await user_manager.get_user_by_login(login)
+        if not user or not user.avatar_url:
+            return {"avatar_url": None}
+        return {"avatar_url": user.avatar_url}
+    except UserNotFoundError as e:
+        return {"avatar_url": None}
+    except Exception as e:
+        app_logger.error(f"Ошибка при получении аватара: {e}")
+        raise DatabaseError("Ошибка при получении аватара")
+
 @user_router.patch('/me',
                   summary='Частичное обновление данных о себе',
                   status_code=status.HTTP_200_OK,
@@ -99,6 +113,19 @@ async def patch_me(updated_user: UpdateMe,
     except Exception as e:
         app_logger.error(f"Ошибка при обновлении данных о себе: {e}")
         raise DatabaseError("Ошибка при обновлении данных о себе")
+
+@user_router.patch('/me/avatar', summary='Обновить аватар (base64-строка)', status_code=status.HTTP_200_OK)
+async def update_avatar(avatar_base64: str = Body(..., embed=True), user: User = Depends(get_current_user)):
+    try:
+        update_data = UpdateUser(avatar_url=avatar_base64)
+        result = await user_manager.update_obj(id=getattr(user, 'id', 0), updated_obj=update_data)
+        app_logger.info(f"Аватар пользователя {user.login} обновлён")
+        return {"avatar_url": result.avatar_url}
+    except UserNotFoundError as e:
+        raise e
+    except Exception as e:
+        app_logger.error(f"Ошибка при обновлении аватара: {e}")
+        raise DatabaseError("Ошибка при обновлении аватара")
 
 @user_router.delete('/me',
                     summary='Удалить свой аккаунт',

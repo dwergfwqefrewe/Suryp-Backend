@@ -9,6 +9,7 @@ class Message(Base):
         - id: первичный ключ
         - sender_id: id отправителя (user)
         - receiver_id: id получателя (user)
+        - room_id: id комнаты (room) - MD5 hash
         - text: текст сообщения
         - timestamp: время отправки
     """
@@ -17,8 +18,9 @@ class Message(Base):
     id = Column(Integer, primary_key=True)
     sender_id = Column(Integer, ForeignKey('users.id'), nullable=False)
     receiver_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    room_id = Column(String, nullable=False)
     text = Column(String, nullable=False)
-    timestamp = Column(DateTime, default=datetime.utcnow, nullable=False)
+    timestamp = Column(DateTime, default=datetime.utcnow(), nullable=False)
 
     sender = relationship('User',
                             foreign_keys=[sender_id],

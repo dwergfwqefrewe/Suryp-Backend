@@ -27,10 +27,10 @@ class MessageManager(BaseManager[Message, MessageUpdate]):
             and_(Message.sender_id == user2_id, Message.receiver_id == user1_id)
         )
 
-    async def save_message(self, sender_id: int, receiver_id: int, text: str) -> Message:
+    async def save_message(self, sender_id: int, receiver_id: int, text: str, room_id: str) -> Message:
         try:
             async with manager.get_async_session() as session:
-                message = Message(sender_id=sender_id, receiver_id=receiver_id, text=text)
+                message = Message(sender_id=sender_id, receiver_id=receiver_id, text=text, room_id=room_id)
                 session.add(message)
                 await session.commit()
                 await session.refresh(message)
@@ -39,44 +39,44 @@ class MessageManager(BaseManager[Message, MessageUpdate]):
             app_logger.exception(f"Ошибка при сохранении сообщения sender_id={sender_id}, receiver_id={receiver_id}")
             raise DatabaseError(f"Ошибка при сохранении сообщения sender_id={sender_id}, receiver_id={receiver_id}")
 
-    async def get_history(self, user1_id: int, user2_id: int) -> List[Message]:
+    async def get_history(self, room_id: str) -> List[Message]:
         try:
             async with manager.get_async_session() as session:
                 result = await session.execute(
-                    select(Message).where(self._chat_filter(user1_id, user2_id)).order_by(Message.timestamp.asc())
+                    select(Message).where(Message.room_id == room_id).order_by(Message.timestamp.asc())
                 )
                 return list(result.scalars().all())
         except Exception as e:
-            app_logger.exception(f"Ошибка при получении истории сообщений user1_id={user1_id}, user2_id={user2_id}")
-            raise DatabaseError(f"Ошибка при получении истории сообщений user1_id={user1_id}, user2_id={user2_id}")
+            app_logger.exception(f"Ошибка при получении истории сообщений room_id={room_id}")
+            raise DatabaseError(f"Ошибка при получении истории сообщений room_id={room_id}")
 
-    async def get_chats(self, user_id: int) -> List[Message]:
+    async def get_room_ids_by_user_id(self, user_id: int) -> List[str]:
         try:
             async with manager.get_async_session() as session:
                 result = await session.execute(
-                    select(Message).where(
-                        or_(
-                            Message.sender_id == user_id,
-                            Message.receiver_id == user_id
-                        )
-                    ).order_by(Message.timestamp.desc())
+                    select(Message.room_id).where(Message.sender_id == user_id).distinct(Message.room_id)  
                 )
                 return list(result.scalars().all())
         except Exception as e:
             app_logger.exception(f"Ошибка при получении чатов user_id={user_id}")
             raise DatabaseError(f"Ошибка при получении чатов user_id={user_id}")
 
-    async def get_last_message(self, first_login: str, second_login: str) -> Optional[Message]:
+    async def get_last_message_by_room_id(self, room_id: str) -> Optional[Message]:
         try:
-            first_id = await user_manager.get_user_id_by_login(first_login)
-            second_id = await user_manager.get_user_id_by_login(second_login)
-            if first_id is None or second_id is None:
-                return None
             async with manager.get_async_session() as session:
                 result = await session.execute(
-                    select(Message).where(self._chat_filter(first_id, second_id)).order_by(Message.timestamp.desc())
+                    select(Message).where(Message.room_id == room_id).order_by(Message.timestamp.desc())
                 )
                 return result.scalars().first()
         except Exception as e:
-            app_logger.exception(f"Ошибка при получении последнего сообщения first_login={first_login}, second_login={second_login}")
-            raise DatabaseError(f"Ошибка при получении последнего сообщения first_login={first_login}, second_login={second_login}")
+            app_logger.exception(f"Ошибка при получении последнего сообщения room_id={room_id}")
+            raise DatabaseError(f"Ошибка при получении последнего сообщения room_id={room_id}")
+
+    async def get_history(self, room_id: str) -> List[Message]:
+        try:
+            async with manager.get_async_session() as session:
+                result = await session.execute(select(Message).where(Message.room_id == room_id))
+                return list(result.scalars().all())
+        except Exception as e:
+            app_logger.exception(f"Ошибка при получении истории сообщений room_id={room_id}")
+            raise DatabaseError(f"Ошибка при получении истории сообщений room_id={room_id}")
